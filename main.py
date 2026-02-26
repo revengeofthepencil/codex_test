@@ -179,7 +179,7 @@ def run_calculation_from_prompt(prompt, output_script_name = "calculation_script
 def main():
     # let's try something simple with extraneous information to see if the agent can focus on the relevant details
     train_prompt = "A train leaves Chicago for Los Angeles at 3:00PM traveling 50mph. The conductor has cold pizza for breakfast and everyone on the train agrees his breath smells horrible. Another train leaves Los Angeles for Chicago at 3:22PM travelling 40mpg. Asssuming they run on parallel tracks, what time will they meet if the conductor drinks a double espresso? The distance between Chicago and Los Angeles is 2,017 miles. Time Bandits is my favorite movie."
-    # run_calculation_from_prompt(train_prompt, "train_meeting_calculation")
+    run_calculation_from_prompt(train_prompt, "train_meeting_calculation")
 
     # let's see it use a tool
     MIN_NUM = 1
