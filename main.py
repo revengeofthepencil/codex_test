@@ -4,6 +4,8 @@ import contextlib
 import io
 import math
 import os
+import re
+from datetime import datetime
 from typing import Any
 
 from langchain.chat_models import init_chat_model
@@ -145,6 +147,23 @@ def main():
             value = final_values["context"][key]
             print(f"  {key}: {value}")
     print("\n----------------------")
+
+    # Extract and save the final python script
+    if "messages" in final_values:
+        scripts = []
+        for msg in final_values["messages"]:
+            if hasattr(msg, "content") and msg.content:
+                found = re.findall(r"```python\n(.*?)\n```", msg.content, re.DOTALL)
+                scripts.extend(found)
+        
+        if scripts:
+            os.makedirs("generated_scripts", exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d%H%M")
+            filename = f"train_meeting_calculation_{timestamp}.py"
+            script_path = os.path.join("generated_scripts", filename)
+            with open(script_path, "w") as f:
+                f.write(scripts[-1])
+            print(f"Successfully saved final script to {script_path}")
 
 
 
