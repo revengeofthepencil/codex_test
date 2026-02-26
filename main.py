@@ -177,15 +177,14 @@ def run_calculation_from_prompt(prompt, output_script_name = "calculation_script
 
 
 def main():
-    script_name1 = "train_meeting_calculation"
     # let's try something simple with extraneous information to see if the agent can focus on the relevant details
-    prompt1 = "A train leaves Chicago for Los Angeles at 3:00PM traveling 50mph. The conductor has cold pizza for breakfast and everyone on the train agrees his breath smells horrible. Another train leaves Los Angeles for Chicago at 3:22PM travelling 40mpg. Asssuming they run on parallel tracks, what time will they meet if the conductor drinks a double espresso? The distance between Chicago and Los Angeles is 2,017 miles. Time Bandits is my favorite movie."
-    run_calculation_from_prompt(prompt1, script_name1)
+    train_prompt = "A train leaves Chicago for Los Angeles at 3:00PM traveling 50mph. The conductor has cold pizza for breakfast and everyone on the train agrees his breath smells horrible. Another train leaves Los Angeles for Chicago at 3:22PM travelling 40mpg. Asssuming they run on parallel tracks, what time will they meet if the conductor drinks a double espresso? The distance between Chicago and Los Angeles is 2,017 miles. Time Bandits is my favorite movie."
+    # run_calculation_from_prompt(train_prompt, "train_meeting_calculation")
 
     # let's see it use a tool
     MIN_NUM = 1
     MAX_NUM = 100
-    pca_data = [[random.randint(MIN_NUM, MAX_NUM) for _ in range(3)] for _ in range(3)]
+    pca_data = [[random.randint(MIN_NUM, MAX_NUM) for _ in range(4)] for _ in range(4)]
     pca_as_json = json.dumps(pca_data)
     pca_prompt = f"Here is the dataset. Run PCA and return the square of all principal components:\n{pca_as_json}"
     print(f"pca_prompt:\n{pca_prompt}") 
