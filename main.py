@@ -29,7 +29,14 @@ def eval(code: str, _locals: dict[str, Any]) -> tuple[str, dict[str, Any]]:
 
     # Determine new variables created during execution
     new_keys = set(_locals.keys()) - original_keys
-    new_vars = {key: _locals[key] for key in new_keys}
+    
+    # Filter for serializable values only (exclude modules, types, and functions)
+    new_vars = {}
+    for key in new_keys:
+        val = _locals[key]
+        if isinstance(val, (int, float, str, bool, list, dict, set, tuple, type(None))):
+            new_vars[key] = val
+            
     return result, new_vars
 
 
