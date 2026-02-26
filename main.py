@@ -4,6 +4,8 @@ import contextlib
 import io
 import math
 import os
+import re
+from datetime import datetime
 from typing import Any
 
 from langchain.chat_models import init_chat_model
@@ -44,53 +46,9 @@ def add(a: float, b: float) -> float:
     """Add two numbers together."""
     return a + b
 
-def multiply(a: float, b: float) -> float:
-    """Multiply two numbers together."""
-    return a * b
-
-def divide(a: float, b: float) -> float:
-    """Divide two numbers."""
-    return a / b
-
-def subtract(a: float, b: float) -> float:
-    """Subtract two numbers."""
-    return a - b
-
-def sin(a: float) -> float:
-    """Take the sine of a number."""
-    return math.sin(a)
-
-def cos(a: float) -> float:
-    """Take the cosine of a number."""
-    return math.cos(a)
-
-def radians(a: float) -> float:
-    """Convert degrees to radians."""
-    return math.radians(a)
-
-def exponentiation(a: float, b: float) -> float:
-    """Raise one number to the power of another."""
-    return a**b
-
-def sqrt(a: float) -> float:
-    """Take the square root of a number."""
-    return math.sqrt(a)
-
-def ceil(a: float) -> float:
-    """Round a number up to the nearest integer."""
-    return math.ceil(a)
 
 tools = [
     add,
-    multiply,
-    divide,
-    subtract,
-    sin,
-    cos,
-    radians,
-    exponentiation,
-    sqrt,
-    ceil,
 ]
 
 
@@ -116,7 +74,7 @@ def main():
     
     messages = [{
         "role": "user",
-        "content": "A train leaves Chicago for Los Angeles at 3:00PM traveling 50mph. The conductor has cold pizza for breakfast and everyone on the train agrees his breath smells horrible. Another train leaves Los Angeles for Chicago at 3:22PM travelling 40mpg. Asssuming they run on parallel tracks, what time will they meet if the conductor drinks a double espresso? The distance between Chicago and Los Angeles is 2,017 miles."
+        "content": "A train leaves Chicago for Los Angeles at 3:00PM traveling 50mph. The conductor has cold pizza for breakfast and everyone on the train agrees his breath smells horrible. Another train leaves Los Angeles for Chicago at 3:22PM travelling 40mpg. Asssuming they run on parallel tracks, what time will they meet if the conductor drinks a double espresso? The distance between Chicago and Los Angeles is 2,017 miles. Time Bandits is my favorite movie."
     }]
 
     print("\n--- Starting Agent ---\n")
@@ -145,6 +103,23 @@ def main():
             value = final_values["context"][key]
             print(f"  {key}: {value}")
     print("\n----------------------")
+
+    # Extract and save the final python script
+    if "messages" in final_values:
+        scripts = []
+        for msg in final_values["messages"]:
+            if hasattr(msg, "content") and msg.content:
+                found = re.findall(r"```python\n(.*?)\n```", msg.content, re.DOTALL)
+                scripts.extend(found)
+        
+        if scripts:
+            os.makedirs("generated_scripts", exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d%H%M")
+            filename = f"train_meeting_calculation_{timestamp}.py"
+            script_path = os.path.join("generated_scripts", filename)
+            with open(script_path, "w") as f:
+                f.write(scripts[-1])
+            print(f"Successfully saved final script to {script_path}")
 
 
 
