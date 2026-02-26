@@ -11,3 +11,8 @@ dependencies = [
     "numpy>=2.4.2",
     "python-dotenv>=1.2.1",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
