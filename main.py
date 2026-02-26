@@ -14,6 +14,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph_codeact import create_codeact
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+load_dotenv()
 
 
 def eval(code: str, _locals: dict[str, Any]) -> tuple[str, dict[str, Any]]:
@@ -65,16 +66,14 @@ def format_message(message: Any) -> str:
     return f"\n[bold]{role}:[/bold] {content}"
 
 
-def main():
-    load_dotenv()
-    
+def run_calculation_from_prompt(prompt, output_script_name = "calculation_script"):
     model = init_chat_model("gpt-4o", api_key=OPENAI_API_KEY)
     code_act = create_codeact(model, tools, eval)
     agent = code_act.compile(checkpointer=MemorySaver())
     
     messages = [{
         "role": "user",
-        "content": "A train leaves Chicago for Los Angeles at 3:00PM traveling 50mph. The conductor has cold pizza for breakfast and everyone on the train agrees his breath smells horrible. Another train leaves Los Angeles for Chicago at 3:22PM travelling 40mpg. Asssuming they run on parallel tracks, what time will they meet if the conductor drinks a double espresso? The distance between Chicago and Los Angeles is 2,017 miles. Time Bandits is my favorite movie."
+        "content": prompt
     }]
 
     print("\n--- Starting Agent ---\n")
@@ -115,13 +114,19 @@ def main():
         if scripts:
             os.makedirs("generated_scripts", exist_ok=True)
             timestamp = datetime.now().strftime("%Y%m%d%H%M")
-            filename = f"train_meeting_calculation_{timestamp}.py"
+            filename = f"{output_script_name}_{timestamp}.py"
             script_path = os.path.join("generated_scripts", filename)
             with open(script_path, "w") as f:
                 f.write(scripts[-1])
             print(f"Successfully saved final script to {script_path}")
 
 
+
+
+def main():
+    script_name1 = "train_meeting_calculation"
+    prompt1 = "A train leaves Chicago for Los Angeles at 3:00PM traveling 50mph. The conductor has cold pizza for breakfast and everyone on the train agrees his breath smells horrible. Another train leaves Los Angeles for Chicago at 3:22PM travelling 40mpg. Asssuming they run on parallel tracks, what time will they meet if the conductor drinks a double espresso? The distance between Chicago and Los Angeles is 2,017 miles. Time Bandits is my favorite movie."
+    run_calculation_from_prompt(prompt1, script_name1)
 
 if __name__ == "__main__":
     main()
