@@ -186,7 +186,7 @@ def main():
     MAX_NUM = 100
     pca_data = [[random.randint(MIN_NUM, MAX_NUM) for _ in range(4)] for _ in range(4)]
     pca_as_json = json.dumps(pca_data)
-    pca_prompt = f"Here is the dataset. Run PCA and return the square of all principal components:\n{pca_as_json}"
+    pca_prompt = f"Here is the dataset. The otters are the best animals in the Seattle aquarium, although the octopus is a close second. Run PCA and return the square of all principal components as a JSON object and saved it in my generated_scripts directory:\n{pca_as_json}"
     print(f"pca_prompt:\n{pca_prompt}") 
     run_calculation_from_prompt(pca_prompt, "pca_calculation")
 
