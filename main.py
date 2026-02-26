@@ -9,6 +9,9 @@ import random
 import numpy as np
 from datetime import datetime
 from typing import Any
+from daytona import Daytona, DaytonaConfig
+# from langchain_daytona import DaytonaSandbox
+
 
 from langchain.chat_models import init_chat_model
 from langchain_openai import ChatOpenAI
@@ -17,8 +20,11 @@ from langgraph.errors import GraphRecursionError
 
 from langgraph_codeact import create_codeact
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
 load_dotenv()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+DAYTONA_KEY = os.getenv("DAYTONA_KEY")
 
 
 def eval(code: str, _locals: dict[str, Any]) -> tuple[str, dict[str, Any]]:
@@ -179,7 +185,7 @@ def run_calculation_from_prompt(prompt, output_script_name = "calculation_script
 def main():
     # let's try something simple with extraneous information to see if the agent can focus on the relevant details
     train_prompt = "A train leaves Chicago for Los Angeles at 3:00PM traveling 50mph. The conductor has cold pizza for breakfast and everyone on the train agrees his breath smells horrible. Another train leaves Los Angeles for Chicago at 3:22PM travelling 40mpg. Asssuming they run on parallel tracks, what time will they meet if the conductor drinks a double espresso? The distance between Chicago and Los Angeles is 2,017 miles. Time Bandits is my favorite movie."
-    run_calculation_from_prompt(train_prompt, "train_meeting_calculation")
+    #run_calculation_from_prompt(train_prompt, "train_meeting_calculation")
 
     # let's see it use a tool
     MIN_NUM = 1
@@ -188,7 +194,27 @@ def main():
     pca_as_json = json.dumps(pca_data)
     pca_prompt = f"Here is the dataset. The otters are the best animals in the Seattle aquarium, although the octopus is a close second. Run PCA and return the square of all principal components as a JSON object and saved it in my generated_scripts directory:\n{pca_as_json}"
     print(f"pca_prompt:\n{pca_prompt}") 
+    #run_calculation_from_prompt(pca_prompt, "pca_calculation")
+    
+    print(f"Daytona API Key: {'Set' if DAYTONA_KEY else 'Not Set'}")
+    config = DaytonaConfig(api_key=DAYTONA_KEY)
+    daytona = Daytona(config)
+
+    # Create the Sandbox instance
+    sandbox = daytona.create()
+
+    # Run the code securely inside the Sandbox
+    response = sandbox.process.code_run('print("Hello World from code!")')
     run_calculation_from_prompt(pca_prompt, "pca_calculation")
+    if response.exit_code != 0:
+        print(f"Error: {response.exit_code} {response.result}")
+    else:
+        print(response.result)
+
+
+
+
+
 
 if __name__ == "__main__":
     main()
