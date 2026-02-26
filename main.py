@@ -52,7 +52,7 @@ def add(a: float, b: float) -> float:
     return a + b
 
 # pulled from https://www.askpython.com/python/examples/principal-component-analysis
-def run_pca(X: list[list[float]], num_components: int) -> np.ndarray:
+def run_pca_tool(X: list[list[float]], num_components: int) -> np.ndarray:
     """
     Perform Principal Component Analysis (PCA) on a dataset.
 
@@ -96,7 +96,7 @@ def run_pca(X: list[list[float]], num_components: int) -> np.ndarray:
 
 tools = [
     add,
-    run_pca
+    run_pca_tool
 ]
 
 
