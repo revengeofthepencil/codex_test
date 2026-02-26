@@ -2,14 +2,18 @@ from dotenv import load_dotenv
 import builtins
 import contextlib
 import io
-import math
 import os
 import re
+import json
+import random
+import numpy as np
 from datetime import datetime
 from typing import Any
 
 from langchain.chat_models import init_chat_model
+from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.errors import GraphRecursionError
 
 from langgraph_codeact import create_codeact
 
@@ -47,9 +51,52 @@ def add(a: float, b: float) -> float:
     """Add two numbers together."""
     return a + b
 
+# pulled from https://www.askpython.com/python/examples/principal-component-analysis
+def run_pca(X: list[list[float]], num_components: int) -> np.ndarray:
+    """
+    Perform Principal Component Analysis (PCA) on a dataset.
+
+    Args:
+        X (list[list[float]]): The input dataset as a 2D list or array-like structure, where each row is a sample and each column is a feature.
+        num_components (int): The number of principal components to retain.
+
+    Returns:
+        np.ndarray: The reduced dataset with shape (n_samples, num_components).
+
+    Example:
+        >>> data = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
+        >>> reduced = run_pca(data, 2)
+        >>> print(reduced.shape)
+        (3, 2)
+    """
+    arr = np.array(X)
+    print(f"Running PCA on dataset with shape {arr.shape} to reduce to {num_components} components.")
+
+    # Step 1: Center the data
+    X_meaned = arr - np.mean(arr, axis=0)
+
+    # Step 2: Compute covariance matrix
+    cov_mat = np.cov(X_meaned, rowvar=False)
+
+    # Step 3: Compute eigenvalues and eigenvectors
+    eigen_values, eigen_vectors = np.linalg.eigh(cov_mat)
+
+    # Step 4: Sort eigenvalues and eigenvectors
+    sorted_index = np.argsort(eigen_values)[::-1]
+    sorted_eigenvalue = eigen_values[sorted_index]
+    sorted_eigenvectors = eigen_vectors[:, sorted_index]
+
+    # Step 5: Select subset of eigenvectors
+    eigenvector_subset = sorted_eigenvectors[:, 0:num_components]
+
+    # Step 6: Transform the data
+    X_reduced = np.dot(eigenvector_subset.transpose(), X_meaned.transpose()).transpose()
+
+    return X_reduced
 
 tools = [
     add,
+    run_pca
 ]
 
 
@@ -66,7 +113,7 @@ def format_message(message: Any) -> str:
     return f"\n[bold]{role}:[/bold] {content}"
 
 
-def run_calculation_from_prompt(prompt, output_script_name = "calculation_script"):
+def run_calculation_from_prompt(prompt, output_script_name = "calculation_script", recursion_limit=25):
     model = init_chat_model("gpt-4o", api_key=OPENAI_API_KEY)
     code_act = create_codeact(model, tools, eval)
     agent = code_act.compile(checkpointer=MemorySaver())
@@ -79,17 +126,23 @@ def run_calculation_from_prompt(prompt, output_script_name = "calculation_script
     print("\n--- Starting Agent ---\n")
     
     final_values = {}
-    for typ, chunk in agent.stream(
-        {"messages": messages},
-        stream_mode=["values", "messages"],
-        config={"configurable": {"thread_id": 1}},
-    ):
-        if typ == "messages":
-            msg = chunk[0]
-            if msg.content:
-                print(msg.content, end="", flush=True)
-        elif typ == "values":
-            final_values = chunk
+    try:
+        for typ, chunk in agent.stream(
+            {"messages": messages},
+            stream_mode=["values", "messages"],
+            config={"configurable": {"thread_id": 1}, "recursion_limit": recursion_limit},
+        ):
+            if typ == "messages":
+                msg = chunk[0]
+                if msg.content:
+                    print(msg.content, end="", flush=True)
+            elif typ == "values":
+                final_values = chunk
+    except GraphRecursionError:
+        print("\n\n[!] Error: The agent reached the recursion limit and had to stop.")
+        # Attempt to grab the latest values from the checkpointer if final_values is empty
+        if not final_values:
+            final_values = agent.get_state(config={"configurable": {"thread_id": 1}}).values
 
     print("\n\n--- Final Result ---")
     if "messages" in final_values and final_values["messages"]:
@@ -125,8 +178,18 @@ def run_calculation_from_prompt(prompt, output_script_name = "calculation_script
 
 def main():
     script_name1 = "train_meeting_calculation"
+    # let's try something simple with extraneous information to see if the agent can focus on the relevant details
     prompt1 = "A train leaves Chicago for Los Angeles at 3:00PM traveling 50mph. The conductor has cold pizza for breakfast and everyone on the train agrees his breath smells horrible. Another train leaves Los Angeles for Chicago at 3:22PM travelling 40mpg. Asssuming they run on parallel tracks, what time will they meet if the conductor drinks a double espresso? The distance between Chicago and Los Angeles is 2,017 miles. Time Bandits is my favorite movie."
     run_calculation_from_prompt(prompt1, script_name1)
+
+    # let's see it use a tool
+    MIN_NUM = 1
+    MAX_NUM = 100
+    pca_data = [[random.randint(MIN_NUM, MAX_NUM) for _ in range(3)] for _ in range(3)]
+    pca_as_json = json.dumps(pca_data)
+    pca_prompt = f"Here is the dataset. Run PCA and return the square of all principal components:\n{pca_as_json}"
+    print(f"pca_prompt:\n{pca_prompt}") 
+    run_calculation_from_prompt(pca_prompt, "pca_calculation")
 
 if __name__ == "__main__":
     main()
