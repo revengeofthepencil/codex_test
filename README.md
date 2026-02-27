@@ -1,29 +1,61 @@
-# Codex Test: LangGraph CodeAct Experiment
 
-This is a test application designed to tinker with the `langgraph-codeact` library. It explores autonomous agent behavior using the "CodeAct" pattern, where the agent interacts with a Python execution environment to solve problems.
+# Codex Test: LangGraph CodeAct + Sandbox Experiment
 
-Most of the core logic and setup for this is pulled directly from the [langgraph-codeact documentation](https://github.com/langchain-ai/langgraph-codeact).
+This project demonstrates how to combine LangGraph's CodeAct agent pattern with a secure Python sandbox for autonomous code execution. The setup is ideal for developers experimenting with agentic workflows, safe code evaluation, and tool integration.
 
-## Features
-- **Autonomous Code Execution**: The agent can write and execute Python code to solve complex problems.
-- **Readable Terminal Output**: Customized streaming and final result formatting for better visibility.
-- **Script Archiving**: Automatically extracts and saves the final Python script used for calculations to the `generated_scripts/` directory with a unique timestamp (e.g., `train_meeting_calculation_202602261100.py`).
-- **Serialization Safety**: Filters the execution context to ensure only serializable data is saved by the LangGraph checkpointer.
+## Architecture Overview
 
-## What this is
-- `sandbox/`: a hardened-ish local Python code runner (FastAPI) with:
-  - strict builtins
-  - import allowlist
-  - file writes only under /workspace/<session_id>/
-  - timeout + process kill
-- `agent/`: LangGraph + langgraph-codeact agent that calls the sandbox over HTTP.
+- **Sandbox (FastAPI server)**
+  - Runs untrusted Python code in a restricted environment
+  - Enforces import allowlists, strict builtins, and file access controls
+  - Limits execution time and kills runaway processes
+  - Exposes a simple HTTP API for code execution and session management
 
-## Setup
-1) Put your OpenAI key in `agent/.env`:
-   OPENAI_API_KEY=...
+- **Agent (LangGraph + CodeAct)**
+  - Uses LangGraph's CodeAct pattern to generate, execute, and reason about Python code
+  - Calls the sandbox API to run code securely and retrieve results
+  - Supports tool registration (e.g., math, PCA) and context serialization
+  - Archives generated scripts and outputs for reproducibility
 
-2) Run:
-   docker-compose up --build
+## Key Features
 
-You'll see logs from both services. The agent runs once and exits.
-Generated scripts are saved to: `agent/generated_scripts/`
+- Autonomous agent can solve problems by writing and running Python code
+- Sandbox prevents dangerous imports, restricts file writes, and enforces timeouts
+- Agent streams readable output and saves scripts to `generated_scripts/`
+- Only serializable context variables are checkpointed for safety
+
+## Getting Started
+
+1. Add your OpenAI API key to `.env`:
+   ```
+   OPENAI_API_KEY=sk-...
+   ```
+
+2. (Optional) Set sandbox environment variables for customization:
+   - `SANDBOX_ALLOWED_IMPORTS` (comma-separated list)
+   - `SANDBOX_MAX_SECONDS` (timeout)
+   - `SANDBOX_WORKDIR`, `SANDBOX_OUTPUT_DIR`
+
+3. Start both services (agent and sandbox):
+   - If using Docker Compose:
+     ```
+     docker-compose up --build
+     ```
+   - Or run each service manually
+
+4. The agent will run, interact with the sandbox, and exit. Scripts are saved in `generated_scripts/`.
+
+## Experimentation Tips
+
+- Add new tools to the agent by defining Python functions and including them in the `tools` list
+- Modify sandbox restrictions for different security profiles
+- Inspect archived scripts for reproducibility or debugging
+- Try different prompts to see how the agent uses tools and code execution
+
+## References
+
+- [LangGraph CodeAct Documentation](https://github.com/langchain-ai/langgraph-codeact)
+- [FastAPI](https://fastapi.tiangolo.com/)
+
+---
+For questions or suggestions, open an issue or reach out to the project maintainers.
