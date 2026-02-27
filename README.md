@@ -3,6 +3,10 @@
 
 This project demonstrates how to combine LangGraph's CodeAct agent pattern with a secure Python sandbox for autonomous code execution. The setup is ideal for developers experimenting with agentic workflows, safe code evaluation, and tool integration.
 
+This will run 2 operations 
+1. The old "2 trains leave cities at <time>, when do they meet"
+2. A test running PCA on a random list of numbers, which should call a run_pca tool provided via the sandbox. 
+
 ## Architecture Overview
 
 - **Sandbox (FastAPI server)**
