@@ -180,6 +180,13 @@ def save_json_tool(filename: str, data: Any) -> str:
     Returns the full path written.
     """
     import json
+    from datetime import datetime
+    now = datetime.now()
+    # append the date string to the file name
+    date_str = now.strftime("%Y-%m-%d_%H%M")
+    name, ext = os.path.splitext(filename)
+    filename = f"{name}_{date_str}{ext}"
+
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     safe_name = os.path.basename(filename)
     path = os.path.join(OUTPUT_DIR, safe_name)

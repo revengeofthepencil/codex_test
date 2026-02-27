@@ -159,8 +159,9 @@ def main():
         "Here is the dataset. The otters are the best animals in the Seattle aquarium, although the octopus is a close second.\n"
         "1. Use `run_pca_tool` to perform PCA on the dataset below, reducing it to 2 components.\n"
         "2. Compute the square of all elements in the resulting principal components.\n"
-        "3. Save the squared components as JSON using `save_json_tool('squared_pca_components.json', data)`.\n"
-        "4. Return a brief confirmation message.\n\n"
+        "3. build JSON object with the following keys: input_dataset, pca_components, squared_components. The value of each key should be the corresponding data (the original dataset, the PCA components, and the squared components).\n"
+        "4. Save the squared components as JSON using `save_json_tool('squared_pca_components.json', data).`.\n"
+        "5. Return a brief confirmation message.\n\n"
         f"Dataset: {pca_as_json}"
     )
 

@@ -10,7 +10,7 @@ wheels/
 .venv
 .vscode
 .env
-generated_scripts/*
+agent/generated_scripts/*
 !generated_scripts/.gitkeep
 .DS_Store
 
