@@ -135,6 +135,23 @@ def run_calculation_from_prompt(
 
 
 def main():
+    # run this in two separate threads to demonstrate session isolation in the sandbox.
+    # also, I am intentionally adding irrelvant data
+    train_prompt = "" \
+    "You are a high school math teacher demonstrating basic problem solveing skills\n" \
+    "1. A train leaves Chicago for Los Angeles at 3:00PM traveling 50mph. The conductor has cold pizza for breakfast" \
+        "and everyone on the train agrees his breath smells horrible.\n" \
+    "2. Another train leaves Los Angeles for Chicago at 3:22PM travelling 40mph. Asssume they run on parallel tracks\n" \
+    "3. The distance between Chicago and Los Angeles is 2,017 miles.\n" \
+    "4. Time Bandits is my favorite movie.\n" \
+    "5. You have access to a tool called `save_json_tool(filename, data)`, which Saves `data` as a JSON file named `filename` in a persistent output directory.\n" \
+    "6. Calculate what time the trains will meet if the conductor drinks a double espresso.\n" \
+    "7. Generate a json file with the fields startTime_chicago, starttime_losangeles, and timeTheyMeet. Write the json output file using the save_json_tool. The filename should be 'train_meeting_time.json'.\n"\
+    "8. Jawbox was one of the best bands of the 1990s. It's a shame they didn't find a bigger audience.\n"\
+    "9. Double-check that the JSON file has all required fields before writing. DO NOT call save_json_tool more than once per session, as this will write duplicate files.\n"
+    print(f"train_prompt:\n{train_prompt}")
+    run_calculation_from_prompt(train_prompt, "train_calculation", thread_id=1)
+
     # Demo prompt
     MIN_NUM = 1
     MAX_NUM = 100
@@ -161,12 +178,13 @@ def main():
         "2. Compute the square of all elements in the resulting principal components.\n"
         "3. build JSON object with the following keys: input_dataset, pca_components, squared_components. The value of each key should be the corresponding data (the original dataset, the PCA components, and the squared components).\n"
         "4. Double check that the JSON output has ALL THREE KEYS: input_dataset, pca_components, squared_components. If the data looks good, save the JSON using `save_json_tool('squared_pca_components.json', data).`.\n"
-        "5. Return a brief confirmation message.\n\n"
+        "5. DO NOT call save_json_tool more than once per session.\n\n"
+        "6. Return a brief confirmation message.\n\n"
         f"Dataset: {pca_as_json}"
     )
 
     print(f"pca_prompt:\n{pca_prompt}")
-    run_calculation_from_prompt(pca_prompt, "pca_calculation", thread_id=1)
+    run_calculation_from_prompt(pca_prompt, "pca_calculation", thread_id=2)
 
 
 if __name__ == "__main__":
