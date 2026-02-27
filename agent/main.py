@@ -135,6 +135,21 @@ def run_calculation_from_prompt(
 
 
 def main():
+    # let's try to run this in two separate threads to demonstrate session isolation in the sandbox.
+
+    # also, I am intentionally adding irrelvant data
+    train_prompt = "" \
+    "You are a high school math teacher demonstrating basic problem solveing skills" \
+    "1. A train leaves Chicago for Los Angeles at 3:00PM traveling 50mph. The conductor has cold pizza for breakfast" \
+    "and everyone on the train agrees his breath smells horrible. Another train leaves Los Angeles for Chicago at 3:22PM travelling 40mph." \
+    "Asssuming they run on parallel tracks" \
+    "2. The distance between Chicago and Los Angeles is 2,017 miles." \
+    "3. Time Bandits is my favorite movie." \
+    "4. You have access to a tool called save_json_tool(filename, data)`, which Saves `data` as a JSON file named `filename` in a persistent output directory." \
+    "5. Please calulcate what time the trains will meet if the conductor drinks a double espresso." \
+    "8. Generate a json file with the fields startTime_chicago, starttime_losangeles, and timeTheyMeet. Write the json output file using the save_json_tool. The filename should be 'train_meeting_time.json'." 
+    run_calculation_from_prompt(train_prompt, "train_calculation", thread_id=1)
+
     # Demo prompt
     MIN_NUM = 1
     MAX_NUM = 100
@@ -166,7 +181,7 @@ def main():
     )
 
     print(f"pca_prompt:\n{pca_prompt}")
-    run_calculation_from_prompt(pca_prompt, "pca_calculation", thread_id=1)
+    run_calculation_from_prompt(pca_prompt, "pca_calculation", thread_id=2)
 
 
 if __name__ == "__main__":
