@@ -49,13 +49,6 @@ This will run 2 operations
 
 4. The agent will run, interact with the sandbox, and exit. Scripts are saved in `generated_scripts/`.
 
-## Experimentation Tips
-
-- Add new tools to the agent by defining Python functions and including them in the `tools` list
-- Modify sandbox restrictions for different security profiles
-- Inspect archived scripts for reproducibility or debugging
-- Try different prompts to see how the agent uses tools and code execution
-
 ## References
 
 - [LangGraph CodeAct Documentation](https://github.com/langchain-ai/langgraph-codeact)
