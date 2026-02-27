@@ -1,0 +1,50 @@
+services:
+  sandbox:
+    build: ./sandbox
+    container_name: local-sandbox
+    expose:
+      - "8082"
+    environment:
+      - SANDBOX_MAX_SECONDS=5
+      - SANDBOX_ALLOWED_IMPORTS=numpy,math,json,statistics,random
+      - SANDBOX_WORKDIR=/workspace
+    networks:
+      - internal_net
+    # Hardening:
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1.0
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+      - /workspace:rw,noexec,nosuid,size=256m
+    restart: unless-stopped
+    volumes:
+      - ./agent/generated_scripts:/outputs
+
+
+  agent:
+    build: ./agent
+    container_name: local-agent
+    depends_on:
+      - sandbox
+    env_file:
+      - ./agent/.env
+    environment:
+      - SANDBOX_URL=http://sandbox:8082
+    volumes:
+      - ./agent/generated_scripts:/app/generated_scripts
+    working_dir: /app
+    command: ["python", "main.py"]
+    networks:
+      - internal_net
+      - default
+    restart: "no"
+
+networks:
+  internal_net:
+    internal: true
